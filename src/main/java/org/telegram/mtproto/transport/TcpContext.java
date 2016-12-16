@@ -250,7 +250,7 @@ public class TcpContext implements PyroClientListener {
         if (buff == null) {
             return;
         }
-        selector.scheduleTask(() -> {
+        selector.scheduleTask(new Runnable(){public void run() {
             if ((connectionState == ConnectionState.TcpConnectionStageIdle) ||
                     (connectionState == ConnectionState.TcpConnectionStageReconnecting) ||
                     (connectionState == ConnectionState.TcpConnectionStageSuspended) || (client == null)) {
@@ -304,6 +304,7 @@ public class TcpContext implements PyroClientListener {
 
             TcpContext.this.sentPackets++;
             client.write(buffer);
+        }
         });
     }
 
@@ -386,7 +387,7 @@ public class TcpContext implements PyroClientListener {
                     reconnectTimer.schedule(new TimerTask() {
                         @Override
                         public void run() {
-                            selector.scheduleTask(() -> {
+                            selector.scheduleTask(new Runnable(){public void run() {
                                 try {
                                     synchronized (timerSync) {
                                         if (reconnectTimer != null) {
@@ -398,6 +399,7 @@ public class TcpContext implements PyroClientListener {
                                     Logger.e(TcpContext.this.TAG, e2);
                                 }
                                 connect();
+                            }
                             });
                         }
                     }, (failedConnectionCount > 3) ? 500 : 300, (failedConnectionCount > 3) ? 500 : 300);
@@ -409,7 +411,7 @@ public class TcpContext implements PyroClientListener {
     }
 
     public void connect() {
-        selector.scheduleTask(() -> {
+        selector.scheduleTask(new Runnable(){public void run() {
             if (((connectionState == ConnectionState.TcpConnectionStageConnected) || (connectionState == ConnectionState.TcpConnectionStageConnecting)) && (client != null)) {
                 return;
             }
@@ -447,7 +449,7 @@ public class TcpContext implements PyroClientListener {
             } catch (Exception e) {
                 handleConnectionError(e);
             }
-        });
+        }});
     }
 
     private void handleConnectionError(Exception e) {

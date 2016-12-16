@@ -225,7 +225,7 @@ public class TLUpdateShortChatMessage extends TLAbsUpdates {
     }
 
     public TLVector<TLAbsMessageEntity> getEntities() {
-        return hasEntities() ? entities : new TLVector<>();
+        return hasEntities() ? entities : new TLVector<TLAbsMessageEntity>();
     }
 
     public void setEntities(TLVector<TLAbsMessageEntity> entities) {

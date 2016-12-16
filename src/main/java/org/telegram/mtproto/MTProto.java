@@ -198,9 +198,17 @@ public class MTProto {
             }
 
             if (this.receivedMessages.size() > MESSAGES_CACHE_MIN) {
-                if (!receivedMessages.stream().anyMatch(x -> messageId > x)) {
-                    return false;
+              boolean anyMatch=false;
+              for (Long m:receivedMessages){
+                if (messageId>m){
+                  anyMatch=true;
+                  break;
                 }
+              }
+              
+              if (!anyMatch){
+                return false;
+              }
             }
 
             while (this.receivedMessages.size() >= (MESSAGES_CACHE - 1)) {

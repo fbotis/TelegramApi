@@ -1,5 +1,17 @@
 package org.telegram.api.engine;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.telegram.api.TLApiContext;
 import org.telegram.api.TLConfig;
 import org.telegram.api.auth.TLExportedAuthorization;
@@ -29,17 +41,6 @@ import org.telegram.tl.TLBoolTrue;
 import org.telegram.tl.TLBytes;
 import org.telegram.tl.TLMethod;
 import org.telegram.tl.TLObject;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created with IntelliJ IDEA.
  * User: Ruben Bermudez
@@ -332,23 +333,33 @@ public class TelegramApi {
         }
 
         T resultObject = null;
-        final CompletableFuture<T> completableFuture = new CompletableFuture<>();
-
+        final CountDownLatch latch=new CountDownLatch(1);
+        final AtomicReference<T> resultObjectRef=new AtomicReference<T>();
+        final AtomicReference<Throwable> resultExceptionRef=new AtomicReference<Throwable>();
+            
         doRpcCall(method, timeout, new RpcCallback<T>() {
             @Override
             public void onResult(T result) {
-                completableFuture.complete(result);
+              resultObjectRef.set(result);
+                latch.countDown();
             }
 
             @Override
             public void onError(int errorCode, String message) {
-                completableFuture.completeExceptionally(new RpcException(errorCode, message));
+              resultExceptionRef.set(new RpcException(errorCode, message));
+               latch.countDown();
             }
         }, destDc, authRequired);
 
 
         try {
-            resultObject = completableFuture.get(timeout, TimeUnit.MILLISECONDS);
+            if (!latch.await(timeout, TimeUnit.MILLISECONDS)){
+              throw new java.util.concurrent.TimeoutException("Timeout while waiting for rpc result timeout="+TimeUnit.MILLISECONDS.toSeconds(timeout)+" seconds");
+            }
+            if (resultExceptionRef.get()!=null){
+              throw new ExecutionException(resultExceptionRef.get());
+            }
+            resultObject = resultObjectRef.get();
         } catch (InterruptedException e) {
             Logger.w(TAG, method.toString());
             Logger.e(TAG, e);

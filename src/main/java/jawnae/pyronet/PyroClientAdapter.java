@@ -4,10 +4,11 @@
 
 package jawnae.pyronet;
 
-import org.telegram.bot.services.BotLogger;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import org.telegram.util.BotLogger;
 
 public class PyroClientAdapter implements PyroClientListener {
    private static final String LOGTAG = "PYROCLIENTADAPTER";
