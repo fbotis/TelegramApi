@@ -13,8 +13,11 @@ import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import org.apache.log4j.Logger;
+
 @SuppressWarnings("ObjectEquality")
 public class PyroSelector {
+    private static final Logger log=Logger.getLogger(PyroSelector.class);
     private static boolean DO_NOT_CHECK_NETWORK_THREAD = false;
     static final int BUFFER_SIZE = 64 * 1024;
     private Thread networkThread;
@@ -88,7 +91,7 @@ public class PyroSelector {
             try {
                 task.run();
             } catch (Throwable cause) {
-                cause.printStackTrace();
+              log.error(cause);
             }
         }
     }
@@ -98,7 +101,7 @@ public class PyroSelector {
         try {
             selected = nioSelector.select(timeout);
         } catch (IOException exc) {
-            exc.printStackTrace();
+              log.error(exc);
         }
     }
 
@@ -141,8 +144,7 @@ public class PyroSelector {
         // -- to become UNACCESSIBLE), and all other threads
         // -- that might not see the change will
         // -- (continue to) block access to this selector
-        this.networkThread = null;
-
+        this.networkThread = 
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -162,10 +164,14 @@ public class PyroSelector {
                         PyroSelector.this.select();
                     }
                 } catch (Exception exc) {
+                  if (!Thread.interrupted()){
                     throw new IllegalStateException(exc);
+                  }
                 }
             }
-        }, name).start();
+        }, name);
+        
+        networkThread.start();
     }
 
     //

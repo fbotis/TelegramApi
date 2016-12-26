@@ -473,4 +473,10 @@ public class Downloader {
             }
         }
     }
+
+    public void stop() {
+      for (Thread t:threads){
+        t.interrupt();
+      }      
+    }
 }

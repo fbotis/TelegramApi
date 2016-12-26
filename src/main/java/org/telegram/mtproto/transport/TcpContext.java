@@ -553,5 +553,11 @@ public class TcpContext implements PyroClientListener {
         }
         lastPacketLength = 0;
         channelToken = 0;
+        try {
+          selector.close();
+        } catch (IOException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
     }
 }

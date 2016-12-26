@@ -549,4 +549,10 @@ public class Uploader {
             }
         }
     }
+
+    public void stop() {
+      for (Thread t:threads){
+        t.interrupt();
+      }
+    }
 }

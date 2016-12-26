@@ -41,6 +41,7 @@ import org.telegram.tl.TLBoolTrue;
 import org.telegram.tl.TLBytes;
 import org.telegram.tl.TLMethod;
 import org.telegram.tl.TLObject;
+import org.telegram.util.BotLogger;
 /**
  * Created with IntelliJ IDEA.
  * User: Ruben Bermudez
@@ -93,9 +94,10 @@ public class TelegramApi {
      * @param _apiCallback the _ api callback
      */
     public TelegramApi(AbsApiState state, AppInfo _appInfo, ApiCallback _apiCallback) {
+        Logger.registerInterface(new Log4jLoggerInterface()); 
+        
         this.INSTANCE_INDEX = instanceIndex.incrementAndGet();
         this.TAG = "TelegramApi#" + this.INSTANCE_INDEX;
-
         long start = System.currentTimeMillis();
         this.apiCallback = _apiCallback;
         this.appInfo = _appInfo;
@@ -248,8 +250,27 @@ public class TelegramApi {
                 this.timeoutThread.interrupt();
                 this.timeoutThread = null;
             }
+            
+            if (this.senderThread!=null){
+              this.senderThread.interrupt();
+              this.senderThread = null;
+            }
+            
+            if (this.dcThread!=null){
+              this.dcThread.interrupt();
+              this.dcThread = null;
+            }
+            
+            this.uploader.stop();
+            this.downloader.stop();
+            
             this.mainProto.close();
         }
+        
+        for (MTProto proto:dcProtos.values()){
+          proto.close();
+        }
+        
     }
 
     /**

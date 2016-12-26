@@ -53,13 +53,14 @@ public class Test {
     // }
     // }
     int i = 1;
-    for (TLMessage m : apiHelper.getChanellMessages(new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30)),
+    for (TLMessage m : apiHelper.getChanellMessages(new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)),
         "Tech Experts")) {
       System.out.print((i++) + " " + new Date(m.getDate() * 1000L));
       System.out.println(" " + m.getFromId() + " " + m.getMessage());
     }
 
-    System.exit(1);
+    apiHelper.stop();
+    System.out.println();
   }
 
 }
